@@ -1,14 +1,14 @@
 /*Query for total sales plus total margin of bussiness by year*/
 SELECT Year, Total_Revenue, Total_Cost, (Total_Revenue - Total_Cost)/Total_Revenue AS Margin
 FROM
-    (
-        SELECT 
-        YEAR([FactSales].[DateKey]) AS Year,
-        SUM([SalesAmount]) AS Total_Revenue,
-        SUM([TotalCost]) AS Total_Cost
-        FROM [ContosoRetailDW].[dbo].[FactSales]
-        GROUP BY YEAR([FactSales].[DateKey])
-    ) AS AccountingTable
+(
+    SELECT 
+    YEAR([FactSales].[DateKey]) AS Year,
+    SUM([SalesAmount]) AS Total_Revenue,
+    SUM([TotalCost]) AS Total_Cost
+    FROM [ContosoRetailDW].[dbo].[FactSales]
+    GROUP BY YEAR([FactSales].[DateKey])
+) AS AccountingTable
 ORDER BY Year ASC;
 
 /*Query for total sales by day. Includes both online and in store*/
@@ -54,28 +54,12 @@ ORDER BY Year;
 
 /*Query for sales by location all time.*/
 SELECT 
-SUM(SalesAmount) AS SalesAmount,
-RegionCountryName
-FROM
-    (SELECT 
-    SalesKey,
-    DateKey,
-    [FactSales].StoreKey,
-    GeographyKey,
-    SalesAmount
-    FROM [ContosoRetailDW].[dbo].[FactSales]
-    FULL JOIN [ContosoRetailDW].[dbo].[DimStore] 
-     ON [FactSales].[StoreKey] = [DimStore].[StoreKey]
-    ) AS StoreSales
-JOIN 
-    (SELECT
-    GeographyKey,
-    ContinentName,
-    CityName,
-    StateProvinceName,
-    RegionCountryName
-    FROM [ContosoRetailDW].[dbo].[DimGeography]
-    ) AS Geographytable
-        ON [StoreSales].GeographyKey = [Geographytable].GeographyKey
-GROUP BY RegionCountryName
-ORDER BY SalesAmount DESC;
+SUM([FactSales].[SalesAmount]) AS SalesAmount,
+[DimGeography].[RegionCountryName]
+FROM [ContosoRetailDW].[dbo].[FactSales]
+JOIN [ContosoRetailDW].[dbo].[DimStore] 
+    ON [FactSales].[StoreKey] = [DimStore].[StoreKey]
+JOIN [ContosoRetailDW].[dbo].[DimGeography]
+    ON [DimGeography].GeographyKey = [DimStore].GeographyKey
+GROUP BY [DimGeography].RegionCountryName
+ORDER BY [SalesAmount] DESC;
